@@ -7,14 +7,14 @@ import postRoutes from "./routes/posts.js"; //.js is required
 // const express = require('express'); // not in use as above method is better
 const app = express();
 
-// Routes setup
-app.use("/posts", postRoutes); //it means ever route in posts will start from localhost://posts/myRout
-
 //General Setup
+app.use(cors());
 app.use(bodyParser.json({ limit: "30mb", extended: true })); //sending images
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
 //all this so that we can send the request properly
+
+// Routes setup //shou;d always below app.use(cors())
+app.use("/posts", postRoutes); //it means ever route in posts will start from localhost://posts/myRout
 
 // we gonna use the mondodb atlas cloud to store the data
 // user - priytesh |  password: priytesh123
