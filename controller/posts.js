@@ -1,6 +1,7 @@
 // we do not want to write the logic insite the routes and
 // therefore writ all the logic here and use it in routes
 
+import mongoose from "mongoose";
 import PostMessage from "../models/postMessage.js"; //give acces to model
 
 export const getPosts = async (req, res) => {
@@ -15,13 +16,26 @@ export const getPosts = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-//   res.send("Post creation");
-const post = req.body;
-const newPost = new PostMessage(post);
-try {
+  //   res.send("Post creation");
+  const post = req.body;
+  const newPost = new PostMessage(post);
+  try {
     await newPost.save(); //async action
-    res.status(200).json(newPost)
-} catch (error) {
-    res.status(409).json({message: error.message})
-}
+    res.status(200).json(newPost);
+  } catch (error) {
+    res.status(409).json({ message: error.message });
+  }
+};
+
+// /post/123
+export const updatePost = async (req, res) => {
+  const { id: _id } = req.params;
+
+  // check validity
+  if (!mongoose.Types.ObjectId.isValid(_id))
+    return res.status(404).send("No post with that Id");
+  const updatedPost = await PostMessage.findByIdAndUpdate(_id, post, {
+    new: true,
+  });
+  res.json(updatedPost);
 };
