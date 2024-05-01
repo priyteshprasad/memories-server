@@ -15,7 +15,7 @@ router.get(
 
 router.post("/", createPost);
 
-router.patch("/:id", updatePost);
+router.patch("/:id", updatePost); //patch is used to update
 //we need to id of existing post
 
 export default router;
