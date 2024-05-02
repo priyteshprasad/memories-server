@@ -1,6 +1,12 @@
 import express from "express";
 
-import { getPosts, createPost, updatePost } from "../controller/posts.js";
+import {
+  getPosts,
+  createPost,
+  updatePost,
+  deletePost,
+  likePost,
+} from "../controller/posts.js";
 
 const router = express.Router();
 
@@ -17,5 +23,8 @@ router.post("/", createPost);
 
 router.patch("/:id", updatePost); //patch is used to update
 //we need to id of existing post
+router.delete("/:id", deletePost);
+
+router.patch("/:id/likePost", likePost);
 
 export default router;
