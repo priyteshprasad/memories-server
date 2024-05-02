@@ -1,5 +1,5 @@
 // we do not want to write the logic insite the routes and
-// therefore writ all the logic here and use it in routes
+// therefore write all the logic here and use it in routes
 
 import mongoose from "mongoose";
 import PostMessage from "../models/postMessage.js"; //give acces to model
@@ -36,8 +36,12 @@ export const updatePost = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(_id)) {
     return res.status(404).send("No post with that Id");
   }
-  const updatedPost = await PostMessage.findByIdAndUpdate(_id, post, {
-    new: true,
-  });
+  const updatedPost = await PostMessage.findByIdAndUpdate(
+    _id,
+    { ...post, _id },
+    {
+      new: true,
+    }
+  );
   res.json(updatedPost);
 };
