@@ -7,7 +7,7 @@ import {
   deletePost,
   likePost,
 } from "../controller/posts.js";
-
+import auth from "../middleware/auth.js";
 const router = express.Router();
 
 // https://localhost:5000/posts/
@@ -19,12 +19,12 @@ router.get(
   // }
 );
 
-router.post("/", createPost);
+router.post("/", auth, createPost);
 
-router.patch("/:id", updatePost); //patch is used to update
+router.patch("/:id", auth, updatePost); //patch is used to update
 //we need to id of existing post
-router.delete("/:id", deletePost);
+router.delete("/:id", auth, deletePost);
 
-router.patch("/:id/likePost", likePost);
+router.patch("/:id/likePost", auth, likePost); //liking only once
 
 export default router;

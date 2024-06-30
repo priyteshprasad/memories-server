@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
 import postRoutes from "./routes/posts.js"; //.js is required
+import userRoutes from "./routes/users.js";
 import dotenv from "dotenv";
 // const express = require('express'); // not in use as above method is better
 const app = express();
@@ -16,7 +17,7 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 // Routes setup //shou;d always below app.use(cors())
 app.use("/posts", postRoutes); //it means ever route in posts will start from localhost://posts/myRout
-
+app.use("/user", userRoutes);
 // we gonna use the mondodb atlas cloud to store the data
 // user - priytesh |  password: priytesh123
 

@@ -18,7 +18,11 @@ export const getPosts = async (req, res) => {
 export const createPost = async (req, res) => {
   //   res.send("Post creation");
   const post = req.body;
-  const newPost = new PostMessage(post);
+  const newPost = new PostMessage({
+    ...post,
+    creator: req.userId,
+    createdAt: new Date().toISOString(),
+  });
   try {
     await newPost.save(); //async action
     res.status(200).json(newPost);
@@ -56,13 +60,21 @@ export const deletePost = async (req, res) => {
 
 export const likePost = async (req, res) => {
   const { id } = req.params;
+  // req.userId will be present because we have added it in middle ware
+  if (!req.userId) return res.json({ message: "Unauthenticated" });
   if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(404).send("No post with that id");
+    return res.status(404).send(`No post with id: ${id}`);
   const post = await PostMessage.findById(id);
-  const updatedPost = await PostMessage.findByIdAndUpdate(
-    id,
-    { likeCount: post.likeCount + 1 },
-    { new: true }
-  );
+  const index = post.likes?.findIndex((id) => id === String(req.userId));
+  if (index === -1) {
+    // this user has not liked the post
+    post.likes.push(req.userId);
+  } else {
+    // unlike, keep all the like except of the user
+    post.likes = post.likes.filter((id) => id !== String(req.userId));
+  }
+  const updatedPost = await PostMessage.findByIdAndUpdate(id, post, {
+    new: true,
+  });
   res.json(updatedPost);
 };
