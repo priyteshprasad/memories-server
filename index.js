@@ -23,7 +23,7 @@ app.use("/user", userRoutes);
 
 // const CONNECTION_URL =
 //   "mongodb+srv://priytesh:priytesh123@cluster0.nxqtwhz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 
 mongoose
   .connect(process.env.CONNECTION_URL) //make connection //, {userNewUrlParser: true, useUnifiedTopology: true} depricated

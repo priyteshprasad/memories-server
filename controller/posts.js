@@ -15,6 +15,19 @@ export const getPosts = async (req, res) => {
   }
 };
 
+// query=> /posts?page=1 -> page = 1 ; when we want to query and result can change
+// params=> /posts/123 -> id=123 ; when we want ot get a specific data
+export const getPostsBySearch = async (req, res) => {
+  const {searchQuery, tags} = req.query;
+  try {
+    const title = new RegExp(searchQuery, 'i'); //i stands for ignore case: test Test tEST all are same; regex helps mongo to search 
+    const posts = await PostMessage.find({ $or: [{ title }, { tags: { $in: tags.split(',')}}]}) //$or: either match any object in array //$in: any value of key if present in the recieved array
+    res.json({data: posts});
+  } catch (error) {
+    res.status(404).json({message: error.message}) 
+  }
+}
+
 export const createPost = async (req, res) => {
   //   res.send("Post creation");
   const post = req.body;
