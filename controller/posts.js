@@ -6,10 +6,24 @@ import PostMessage from "../models/postMessage.js"; //give acces to model
 
 export const getPosts = async (req, res) => {
   // res.send("This Works");
+  const { page } = req.query;
+
   try {
-    const postMessages = await PostMessage.find(); //async action takes time
+    const LIMIT = 8;
+    const startIndex = (Number(page) - 1) * LIMIT; //get the starting index of every page; //-1 bcos, we get 0-7 memories at 0th index, and at 1st index we will memories form 8th index to 15th index
+    const total = await PostMessage.countDocuments({});
+    const posts = await PostMessage.find()
+      .sort({ _id: -1 })
+      .limit(LIMIT)
+      .skip(startIndex); //async action takes time
     // console.log(postMessages);
-    res.status(200).json(postMessages);
+    res
+      .status(200)
+      .json({
+        data: posts,
+        currentPage: Number(page),
+        numberOfPages: Math.ceil(total / LIMIT), // total memories/ memories per page
+      });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
@@ -18,15 +32,17 @@ export const getPosts = async (req, res) => {
 // query=> /posts?page=1 -> page = 1 ; when we want to query and result can change
 // params=> /posts/123 -> id=123 ; when we want ot get a specific data
 export const getPostsBySearch = async (req, res) => {
-  const {searchQuery, tags} = req.query;
+  const { searchQuery, tags } = req.query;
   try {
-    const title = new RegExp(searchQuery, 'i'); //i stands for ignore case: test Test tEST all are same; regex helps mongo to search 
-    const posts = await PostMessage.find({ $or: [{ title }, { tags: { $in: tags.split(',')}}]}) //$or: either match any object in array //$in: any value of key if present in the recieved array
-    res.json({data: posts});
+    const title = new RegExp(searchQuery, "i"); //i stands for ignore case: test Test tEST all are same; regex helps mongo to search
+    const posts = await PostMessage.find({
+      $or: [{ title }, { tags: { $in: tags.split(",") } }],
+    }); //$or: either match any object in array //$in: any value of key if present in the recieved array
+    res.json({ data: posts });
   } catch (error) {
-    res.status(404).json({message: error.message}) 
+    res.status(404).json({ message: error.message });
   }
-}
+};
 
 export const createPost = async (req, res) => {
   //   res.send("Post creation");
