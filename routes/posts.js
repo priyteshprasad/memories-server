@@ -7,6 +7,7 @@ import {
   deletePost,
   likePost,
   getPostsBySearch,
+  getPost
 } from "../controller/posts.js";
 import auth from "../middleware/auth.js";
 const router = express.Router();
@@ -19,10 +20,11 @@ router.get(
   //   res.send("This Works");
   // }
 );
+
 // all of the routes begain with /posts
 router.get('/search', getPostsBySearch)
-
 router.post("/", auth, createPost);
+router.get('/:id', getPost)
 
 router.patch("/:id", auth, updatePost); //patch is used to update
 //we need to id of existing post

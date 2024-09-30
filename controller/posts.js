@@ -17,13 +17,11 @@ export const getPosts = async (req, res) => {
       .limit(LIMIT)
       .skip(startIndex); //async action takes time
     // console.log(postMessages);
-    res
-      .status(200)
-      .json({
-        data: posts,
-        currentPage: Number(page),
-        numberOfPages: Math.ceil(total / LIMIT), // total memories/ memories per page
-      });
+    res.status(200).json({
+      data: posts,
+      currentPage: Number(page),
+      numberOfPages: Math.ceil(total / LIMIT), // total memories/ memories per page
+    });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
@@ -32,7 +30,9 @@ export const getPosts = async (req, res) => {
 // query=> /posts?page=1 -> page = 1 ; when we want to query and result can change
 // params=> /posts/123 -> id=123 ; when we want ot get a specific data
 export const getPostsBySearch = async (req, res) => {
+  // console.log("line34", req.query)
   const { searchQuery, tags } = req.query;
+  
   try {
     const title = new RegExp(searchQuery, "i"); //i stands for ignore case: test Test tEST all are same; regex helps mongo to search
     const posts = await PostMessage.find({
@@ -40,9 +40,20 @@ export const getPostsBySearch = async (req, res) => {
     }); //$or: either match any object in array //$in: any value of key if present in the recieved array
     res.json({ data: posts });
   } catch (error) {
+    console.log("error", error)
     res.status(404).json({ message: error.message });
   }
 };
+
+export const getPost = async (req, res) => {
+  const {id} = req.params;
+  try {
+    const post = await PostMessage.findById(id)
+    res.status(200).json(post)
+  } catch (error) {
+    res.status(404).json({message: error.message})
+  }
+}
 
 export const createPost = async (req, res) => {
   //   res.send("Post creation");
