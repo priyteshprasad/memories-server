@@ -7,7 +7,8 @@ import {
   deletePost,
   likePost,
   getPostsBySearch,
-  getPost
+  getPost,
+  commentPost
 } from "../controller/posts.js";
 import auth from "../middleware/auth.js";
 const router = express.Router();
@@ -31,5 +32,6 @@ router.patch("/:id", auth, updatePost); //patch is used to update
 router.delete("/:id", auth, deletePost);
 
 router.patch("/:id/likePost", auth, likePost); //liking only once
+router.post("/:id/commentPost", auth, commentPost); //liking only once
 
 export default router;

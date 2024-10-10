@@ -19,10 +19,10 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use("/posts", postRoutes); //it means ever route in posts will start from localhost://posts/myRout
 app.use("/user", userRoutes);
 // we gonna use the mondodb atlas cloud to store the data
-// user - priytesh |  password: priytesh123
+app.get("/", (req,res)=> res.send('Memories App is running...'))
 
 // const CONNECTION_URL =
-//   "mongodb+srv://priytesh:priytesh123@cluster0.nxqtwhz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+//   "mongodb+srv://username:password@cluster0.xxxxxxx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const PORT = process.env.PORT || 8000;
 
 mongoose
