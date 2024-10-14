@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import dotenv from "dotenv";
+import { sendEmailVerificationMail } from "../utils/authUtils.js";
 dotenv.config();
 
 export const signin = async (req, res) => {
@@ -12,6 +13,9 @@ export const signin = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (!existingUser)
       return res.status(404).json({ message: "User doesn't exists." });
+    if(existingUser.isEmailVerified === false){
+      return res.status(400).json({message: "Please verify email before login."})
+    }
     const isPasswordCorrect = await bcrypt.compare(
       password,
       existingUser.password
@@ -50,9 +54,46 @@ export const signup = async (req, res) => {
     const token = jwt.sign({ email: result.email, id: result._id }, "test", {
       expiresIn: "1h",
     });
-    res.status(200).json({ result, token });
+    // send email logic
+    sendEmailVerificationMail(email, token)
+    return res.status(200).json({ success: true, result});
+    // res.status(200).json({ result, token });
   } catch (error) {}
 };
+
+export const emailVerifyController = async (req, res) => {
+  const token = req.params.token;
+  const user = jwt.verify(token, "test"); //token doesnot required to be stored at DB because it contains the user info
+  
+  try {
+    const userDb = await User.findOneAndUpdate(
+      { email: user.email },
+      { isEmailVerified: true },
+      { new: true } // return object after the update
+    );
+    if(userDb){
+      return res.send({
+        status: 200,
+        message: "Email Verified Successfully",
+        data: userDb,
+      });
+    }else{
+      return res.send({
+        status: 500,
+        message: "Email Verified Not Successfully",
+        data: userDb,
+      });
+    }
+    
+  } catch (error) {
+    return res.send({
+      status: 500,
+      message: "Internal Server Error",
+      error: error,
+    });
+  }
+};
+
 export const mysignup = async (req, res) => {
   const { email, password, confirmPassword, firstName, lastName } = req.body;
   if ((!email || !password || !confirmPassword, !firstName || !lastName)) {

@@ -12,7 +12,7 @@ export const getPosts = async (req, res) => {
     const LIMIT = 8;
     const startIndex = (Number(page) - 1) * LIMIT; //get the starting index of every page; //-1 bcos, we get 0-7 memories at 0th index, and at 1st index we will memories form 8th index to 15th index
     const total = await PostMessage.countDocuments({});
-    const posts = await PostMessage.find()
+    const posts = await PostMessage.find() //implement .filter({isDeleted: false})
       .sort({ _id: -1 })
       .limit(LIMIT)
       .skip(startIndex); //async action takes time
