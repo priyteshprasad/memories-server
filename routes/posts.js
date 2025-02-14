@@ -8,7 +8,8 @@ import {
   likePost,
   getPostsBySearch,
   getPost,
-  commentPost
+  commentPost,
+  getPresignedUrl
 } from "../controller/posts.js";
 import auth from "../middleware/auth.js";
 const router = express.Router();
@@ -25,6 +26,7 @@ router.get(
 // all of the routes begain with /posts
 router.get('/search', getPostsBySearch)
 router.post("/", auth, createPost);
+router.get("/getPresignedUrlForUploading", auth, getPresignedUrl);
 router.get('/:id', getPost)
 
 router.patch("/:id", auth, updatePost); //patch is used to update
