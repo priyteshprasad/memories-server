@@ -25,9 +25,9 @@ export const signin = async (req, res) => {
 
     const token = jwt.sign(
       { email: existingUser.email, id: existingUser._id },
-      "test",
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
-    ); //'test' is the secrete that should come from the env file
+    ); //'**************' is the secrete that should come from the env file
     res.status(200).json({ result: existingUser, token });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong." });
@@ -51,7 +51,7 @@ export const signup = async (req, res) => {
       password: hashedPassword,
       name: `${firstName} ${lastName}`,
     });
-    const token = jwt.sign({ email: result.email, id: result._id }, "test", {
+    const token = jwt.sign({ email: result.email, id: result._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
     // send email logic
@@ -63,7 +63,7 @@ export const signup = async (req, res) => {
 
 export const emailVerifyController = async (req, res) => {
   const token = req.params.token;
-  const user = jwt.verify(token, "test"); //token doesnot required to be stored at DB because it contains the user info
+  const user = jwt.verify(token, process.env.JWT_SECRET); //token doesnot required to be stored at DB because it contains the user info
   
   try {
     const userDb = await User.findOneAndUpdate(
@@ -112,7 +112,7 @@ export const mysignup = async (req, res) => {
       password: hashedPassword,
       name: `${firstName} ${lastName}`,
     });
-    const token = jwt.sign({ email: result.email, id: result._id }, "test", {
+    const token = jwt.sign({ email: result.email, id: result._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
     res.status(200).json({ result: existingUser, token });
@@ -120,6 +120,6 @@ export const mysignup = async (req, res) => {
 };
 
 export const testSignup = async (req, res) => {
-  console.log("test signup");
+  // console.log("test signup");
   res.status(200).json({ message: "success" });
 };
