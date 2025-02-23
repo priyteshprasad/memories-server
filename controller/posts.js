@@ -3,6 +3,19 @@
 
 import mongoose from "mongoose";
 import PostMessage from "../models/postMessage.js"; //give acces to model
+import aws from "aws-sdk";
+import dotenv from "dotenv";
+import { getObjectsWithUpdatedUrls, getObjectWithUpdatedUrl } from "../utils/awsUtils.js";
+dotenv.config();
+
+aws.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECERT_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+const s3 = new aws.S3({
+  region: process.env.AWS_REGION,
+});
 
 export const getPosts = async (req, res) => {
   // res.send("This Works");
@@ -16,9 +29,9 @@ export const getPosts = async (req, res) => {
       .sort({ _id: -1 })
       .limit(LIMIT)
       .skip(startIndex); //async action takes time
-    // console.log(postMessages);
+    const newPosts = await getObjectsWithUpdatedUrls(posts); //update the post.selectedFile value with presigned url
     res.status(200).json({
-      data: posts,
+      data: newPosts,
       currentPage: Number(page),
       numberOfPages: Math.ceil(total / LIMIT), // total memories/ memories per page
     });
@@ -32,28 +45,30 @@ export const getPosts = async (req, res) => {
 export const getPostsBySearch = async (req, res) => {
   // console.log("line34", req.query)
   const { searchQuery, tags } = req.query;
-  
+
   try {
     const title = new RegExp(searchQuery, "i"); //i stands for ignore case: test Test tEST all are same; regex helps mongo to search
     const posts = await PostMessage.find({
       $or: [{ title }, { tags: { $in: tags.split(",") } }],
     }); //$or: either match any object in array //$in: any value of key if present in the recieved array
-    res.json({ data: posts });
+    const newPosts = await getObjectsWithUpdatedUrls(posts)
+    res.json({ data: newPosts });
   } catch (error) {
-    console.log("error", error)
+    console.log("error", error);
     res.status(404).json({ message: error.message });
   }
 };
 
 export const getPost = async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   try {
-    const post = await PostMessage.findById(id)
-    res.status(200).json(post)
+    const post = await PostMessage.findById(id);
+    const newPost = await getObjectWithUpdatedUrl(post)
+    res.status(200).json(newPost);
   } catch (error) {
-    res.status(404).json({message: error.message})
+    res.status(404).json({ message: error.message });
   }
-}
+};
 
 export const createPost = async (req, res) => {
   //   res.send("Post creation");
@@ -71,6 +86,21 @@ export const createPost = async (req, res) => {
   }
 };
 
+export const getPresignedUrl = async (req, res) => {
+  const imageType = req.query.imageType;
+  const imageName = req.query.imageName;
+  // const newName = Date.now().toString() + imageType.split(".")[1]; //replace it with UUID
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: imageName,
+    Expires: 60 * 60,
+    ContentType: imageType,
+  };
+  const preSignedUrl = await s3.getSignedUrl("putObject", params);
+  res.json({ preSignedUrl, fileName: imageName });
+  // res.send("ok")
+};
+
 // /post/123 //123 will fill the value of id
 export const updatePost = async (req, res) => {
   const { id: _id } = req.params;
@@ -80,13 +110,14 @@ export const updatePost = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(_id)) {
     return res.status(404).send("No post with that Id");
   }
-  const updatedPost = await PostMessage.findByIdAndUpdate(
+  let updatedPost = await PostMessage.findByIdAndUpdate(
     _id,
     { ...post, _id },
     {
       new: true,
     }
   );
+  updatedPost = await getObjectWithUpdatedUrl(updatedPost)
   res.json(updatedPost);
 };
 
@@ -119,11 +150,13 @@ export const likePost = async (req, res) => {
   res.json(updatedPost);
 };
 
-export const commentPost  = async (req, res) =>{
-  const {id} = req.params;
-  const {value} = req.body;
-  const post = await PostMessage.findById(id)
+export const commentPost = async (req, res) => {
+  const { id } = req.params;
+  const { value } = req.body;
+  const post = await PostMessage.findById(id);
   post.comments.push(value);
-  const updatedPost = await PostMessage.findByIdAndUpdate(id, post, {new: true})
-  res.json(updatedPost)
-}
+  const updatedPost = await PostMessage.findByIdAndUpdate(id, post, {
+    new: true,
+  });
+  res.json(updatedPost);
+};
